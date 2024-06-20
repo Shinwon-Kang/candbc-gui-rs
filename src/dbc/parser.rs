@@ -1,10 +1,8 @@
-use crate::{BitTiming, ByteOrder, Message, Node, Signal, Symbol, ValueType, Version};
 use nom::{
-    bytes::complete::{is_a, is_not, tag, take_till, take_while},
-    character::complete::{line_ending, space1},
-    sequence::delimited,
-    IResult,
+    bytes::complete::{is_a, is_not, tag, take_till, take_until, take_while}, character::complete::{alpha1, line_ending, space0, space1}, multi::{many0, separated_list0}, sequence::delimited, IResult
 };
+
+use super::dbc::*;
 
 #[cfg(test)]
 mod tests {
@@ -12,16 +10,22 @@ mod tests {
 
     #[test]
     fn parse_version_test() {
-        let s = "VERSION \"0.1\"\n";
+        let s: &str = "VERSION \"0.1\"\n";
         let version = Version("0.1".to_string());
 
         assert_eq!(parse_version(s).unwrap().1, version);
     }
 
     #[test]
+    fn parse_indent_word_test() {
+        let s = "\tCM_\n";
+
+        assert_eq!(parse_indent_word(s).unwrap().1, "CM_");
+    }
+
+    #[test]
     fn parse_new_symbol_test() {
-        let s = r#"
-NS_ :
+        let s = r#"NS_ :
     CM_
     BA_
     VAL_
@@ -34,7 +38,7 @@ NS_ :
             Symbol("CAT_".to_string()),
         ];
 
-        assert_eq!(parse_new_symbol(s), new_symbol);
+        assert_eq!(parse_new_symbol(s).unwrap().1, new_symbol);
     }
 
     #[test]
@@ -43,22 +47,22 @@ NS_ :
 
         let bit_timing = Option::None;
 
-        assert_eq!(parse_bit_timing(s), bit_timing);
+        assert_eq!(parse_bit_timing(s).unwrap().1, bit_timing);
     }
 
     #[test]
     fn parse_nodes_test() {
         let s = "BU_: DBG DRIVER IO MOTOR SENSOR\n";
-
+        
         let nodes = vec![
             Node("DBG".to_string()),
             Node("DRIVER".to_string()),
             Node("IO".to_string()),
             Node("MOTOR".to_string()),
             Node("SENSOR".to_string()),
-        ];
-
-        assert_eq!(parse_nodes(s), nodes);
+            ];
+            
+            assert_eq!(parse_nodes(s).unwrap().1, nodes);
     }
 
     #[test]
@@ -99,7 +103,8 @@ NS_ :
 
 fn parse_version(input: &str) -> IResult<&str, Version> {
     let (input, _) = tag("VERSION")(input)?;
-    let (input, _) = tag(" \"")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = tag("\"")(input)?;
     let (input, version) = take_till(|c| c == '\"')(input)?;
     let (input, _) = tag("\"")(input)?;
     let (input, _) = line_ending(input)?;
@@ -107,16 +112,40 @@ fn parse_version(input: &str) -> IResult<&str, Version> {
     Ok((input, Version(version.to_string())))
 }
 
-fn parse_new_symbol(s: &str) -> Vec<Symbol> {
-    vec![Symbol("".to_string())]
+fn parse_indent_word(input: &str) -> IResult<&str, &str> {
+    let (input, _) = space0(input)?;
+    let (input, symbol) = take_while(|c: char| (c.is_alphabetic() || c.is_ascii_punctuation()))(input)?;
+    let (input, _) = line_ending(input)?;
+    
+    Ok((input, symbol))
 }
 
-fn parse_bit_timing(s: &str) -> Option<Vec<BitTiming>> {
-    Option::Some(vec![BitTiming("".to_string())])
+fn parse_new_symbol(input: &str) -> IResult<&str, Vec<Symbol>> {
+    let (input, _) = tag("NS_ :")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = line_ending(input)?;
+    let (input, symbols) = many0(parse_indent_word)(input)?;
+
+    Ok((input, symbols.into_iter().map(|x| Symbol(x.to_string())).collect()))
 }
 
-fn parse_nodes(s: &str) -> Vec<Node> {
-    vec![Node("".to_string())]
+fn parse_bit_timing(input: &str) -> IResult<&str, Option<Vec<BitTiming>>> {
+    let (input, _) = tag("BS_")(input)?;
+    let (input, _) = tag(":")(input)?;
+    let (input, _) = line_ending(input)?;
+
+    Ok((input, Option::None))
+}
+
+fn parse_nodes(input: &str) -> IResult<&str, Vec<Node>> {
+    let (input, _) = tag("BU_")(input)?;
+    let (input, _) = tag(":")(input)?;
+    let (input, _) = space0(input)?;
+    
+    let (input, nodes) = separated_list0(tag(" "), is_not(" \n"))(input)?;
+    let (input, _) = line_ending(input)?;
+
+    Ok((input, nodes.into_iter().map(|x| Node(x.to_string())).collect()))
 }
 
 fn parse_message(s: &str) -> Message {
