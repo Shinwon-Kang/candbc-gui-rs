@@ -1,7 +1,7 @@
 ## CANDBC Viewer
 
 ### TODO List
-[ ] parser (nom)  
+- [ ] parser (nom)  
   - version
   - new symbol
   - bit timing
@@ -9,4 +9,4 @@
   - messages
   - signals
 
-[ ] viewer (egui or tauri)
+- [ ] viewer (egui or tauri)
