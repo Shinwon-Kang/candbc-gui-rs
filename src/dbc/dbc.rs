@@ -24,23 +24,23 @@ pub struct Node(pub String);
 
 #[derive(Debug, PartialEq)]
 pub struct Message {
-    pub id: u16,
+    pub id: u32,
     pub name: String,
-    pub dlc: u16,
+    pub dlc: u32,
     pub sender: String,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Signal {
     pub name: String,
-    pub start_bit: u16,
-    pub bit_size: u16,
+    pub start_bit: u32,
+    pub bit_size: u32,
     pub byte_ord: ByteOrder,
     pub value_type: ValueType,
-    pub scale: f32,
-    pub offset: u16,
-    pub min: u16,
-    pub max: u16,
+    pub scale: f64,
+    pub offset: u32,
+    pub min: f64,
+    pub max: f64,
     pub unit: String,
     pub receiver: Vec<String>,
 }
@@ -54,6 +54,4 @@ pub struct DBC {
     signals: Vec<Signal>,               // SG_          : CAN 메시지 내의 개별 신호 정의
 }
 
-impl DBC {
-    
-}
+impl DBC {}
