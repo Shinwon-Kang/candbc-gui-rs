@@ -1,5 +1,8 @@
 use nom::{
-    bytes::complete::{is_a, is_not, tag, take, take_till, take_until, take_while}, character::complete::{alpha1, alphanumeric1, char, line_ending, space0, space1}, combinator::recognize, multi::{many0, separated_list0}, number::complete::be_u16, sequence::delimited, IResult
+    bytes::complete::{is_not, tag, take_till, take_while},
+    character::complete::{char, line_ending, space0, space1},
+    multi::{many0, separated_list0},
+    IResult,
 };
 
 use super::dbc::*;
@@ -53,16 +56,16 @@ mod tests {
     #[test]
     fn parse_nodes_test() {
         let s = "BU_: DBG DRIVER IO MOTOR SENSOR\n";
-        
+
         let nodes = vec![
             Node("DBG".to_string()),
             Node("DRIVER".to_string()),
             Node("IO".to_string()),
             Node("MOTOR".to_string()),
             Node("SENSOR".to_string()),
-            ];
-            
-            assert_eq!(parse_nodes(s).unwrap().1, nodes);
+        ];
+
+        assert_eq!(parse_nodes(s).unwrap().1, nodes);
     }
 
     #[test]
@@ -94,7 +97,11 @@ mod tests {
             min: 0.0,
             max: 100.000000065,
             unit: "kph".to_string(),
-            receiver: vec!["SENSOR".to_string(), "MOTOR".to_string(), "K16_BECM".to_string()],
+            receiver: vec![
+                "SENSOR".to_string(),
+                "MOTOR".to_string(),
+                "K16_BECM".to_string(),
+            ],
         };
 
         assert_eq!(parse_signal(s).unwrap().1, signal);
@@ -102,15 +109,16 @@ mod tests {
 }
 
 fn parse_word(input: &str) -> IResult<&str, &str> {
-    let (input, word) = take_while(|c: char| ((c.is_ascii_alphanumeric() || c == '_') && c != ':'))(input)?;
+    let (input, word) =
+        take_while(|c: char| ((c.is_ascii_alphanumeric() || c == '_') && c != ':'))(input)?;
 
     Ok((input, word))
 }
 
 fn parse_double_quote_word(input: &str) -> IResult<&str, &str> {
-    let (input, _) = tag("\"")(input)?;
+    let (input, _) = char('\"')(input)?;
     let (input, word) = take_till(|c| c == '\"')(input)?;
-    let (input, _) = tag("\"")(input)?;
+    let (input, _) = char('\"')(input)?;
 
     Ok((input, word))
 }
@@ -128,7 +136,7 @@ fn parse_indent_word(input: &str) -> IResult<&str, &str> {
     let (input, _) = space0(input)?;
     let (input, symbol) = parse_word(input)?;
     let (input, _) = line_ending(input)?;
-    
+
     Ok((input, symbol))
 }
 
@@ -138,7 +146,10 @@ fn parse_new_symbol(input: &str) -> IResult<&str, Vec<Symbol>> {
     let (input, _) = line_ending(input)?;
     let (input, symbols) = many0(parse_indent_word)(input)?;
 
-    Ok((input, symbols.into_iter().map(|x| Symbol(x.to_string())).collect()))
+    Ok((
+        input,
+        symbols.into_iter().map(|x| Symbol(x.to_string())).collect(),
+    ))
 }
 
 fn parse_bit_timing(input: &str) -> IResult<&str, Option<Vec<BitTiming>>> {
@@ -151,11 +162,14 @@ fn parse_bit_timing(input: &str) -> IResult<&str, Option<Vec<BitTiming>>> {
 fn parse_nodes(input: &str) -> IResult<&str, Vec<Node>> {
     let (input, _) = tag("BU_:")(input)?;
     let (input, _) = space0(input)?;
-    
-    let (input, nodes) = separated_list0(tag(" "), is_not(" \n"))(input)?;
+
+    let (input, nodes) = separated_list0(char(' '), is_not(" \n"))(input)?;
     let (input, _) = line_ending(input)?;
 
-    Ok((input, nodes.into_iter().map(|x| Node(x.to_string())).collect()))
+    Ok((
+        input,
+        nodes.into_iter().map(|x| Node(x.to_string())).collect(),
+    ))
 }
 
 fn parse_message(input: &str) -> IResult<&str, Message> {
@@ -168,13 +182,16 @@ fn parse_message(input: &str) -> IResult<&str, Message> {
     let (input, _) = space1(input)?;
     let (input, sender) = parse_word(input)?;
     let (input, _) = line_ending(input)?;
-    
-    Ok((input, Message {
-        id: id,
-        name: name.to_string(),
-        dlc: dlc,
-        sender: sender.to_string(),
-    }))
+
+    Ok((
+        input,
+        Message {
+            id: id,
+            name: name.to_string(),
+            dlc: dlc,
+            sender: sender.to_string(),
+        },
+    ))
 }
 
 fn parse_signal(input: &str) -> IResult<&str, Signal> {
@@ -182,9 +199,9 @@ fn parse_signal(input: &str) -> IResult<&str, Signal> {
     let (input, name) = parse_word(input)?;
     let (input, _) = tag(" : ")(input)?;
     let (input, start_bit) = nom::character::complete::u32(input)?;
-    let (input, _) = tag("|")(input)?;
+    let (input, _) = char('|')(input)?;
     let (input, bit_size) = nom::character::complete::u32(input)?;
-    let (input, _) = tag("@")(input)?;
+    let (input, _) = char('@')(input)?;
     let (input, byte_ord) = nom::character::complete::u8(input)?;
     let (input, value_type) = nom::character::complete::anychar(input)?;
     let (input, _) = space1(input)?;
@@ -203,20 +220,31 @@ fn parse_signal(input: &str) -> IResult<&str, Signal> {
     let (input, unit) = parse_double_quote_word(input)?;
     let (input, _) = space1(input)?;
     let (input, receiver) = separated_list0(char(','), parse_word)(input)?;
-    
-    Ok((input, Signal {
-        name: name.to_string(),
-        start_bit: start_bit,
-        bit_size: bit_size,
-        byte_ord: if byte_ord == 1 {ByteOrder::LittleEddian} else {ByteOrder::BigEndian},
-        value_type: if value_type == '+' {ValueType::UnsignedValue} else {ValueType::SignedValue},
-        scale: scale.parse().unwrap(),
-        offset: offset,
-        min: min.parse().unwrap(),
-        max: max.parse().unwrap(),
-        unit: unit.to_string(),
-        receiver: receiver.into_iter().map(|x| x.to_string()).collect(),
-    }))
+
+    Ok((
+        input,
+        Signal {
+            name: name.to_string(),
+            start_bit: start_bit,
+            bit_size: bit_size,
+            byte_ord: if byte_ord == 1 {
+                ByteOrder::LittleEddian
+            } else {
+                ByteOrder::BigEndian
+            },
+            value_type: if value_type == '+' {
+                ValueType::UnsignedValue
+            } else {
+                ValueType::SignedValue
+            },
+            scale: scale.parse().unwrap(),
+            offset: offset,
+            min: min.parse().unwrap(),
+            max: max.parse().unwrap(),
+            unit: unit.to_string(),
+            receiver: receiver.into_iter().map(|x| x.to_string()).collect(),
+        },
+    ))
 }
 
 // todo: tag -> char
