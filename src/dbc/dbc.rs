@@ -28,6 +28,7 @@ pub struct Message {
     pub name: String,
     pub dlc: u32,
     pub sender: String,
+    pub signals: Option<Vec<Signal>>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -38,11 +39,29 @@ pub struct Signal {
     pub byte_ord: ByteOrder,
     pub value_type: ValueType,
     pub scale: f64,
-    pub offset: u32,
+    pub offset: f64,
     pub min: f64,
     pub max: f64,
     pub unit: String,
     pub receiver: Vec<String>,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Comment {
+    Normal(String),
+    Node {
+        name: String,
+        comment: String,
+    },
+    Message {
+        id: u32,
+        comment: String,
+    },
+    Signal {
+        id: u32,
+        name: String,
+        comment: String,
+    },
 }
 
 pub struct DBC {
@@ -51,7 +70,6 @@ pub struct DBC {
     bit_timing: Option<Vec<BitTiming>>, // BS_          : CAN 네트워크의 비트 타이밍
     nodes: Vec<Node>,                   // BU_          : 네트워크에 연결된 모든 노드
     messages: Vec<Message>,             // BO_          : CAN 메시지에 대한 정보 정의
-    signals: Vec<Signal>,               // SG_          : CAN 메시지 내의 개별 신호 정의
 }
 
 impl DBC {}
