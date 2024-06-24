@@ -1,7 +1,7 @@
 use nom::{
-    branch::alt,
+    branch::{alt, permutation},
     bytes::complete::{is_not, tag, take_till, take_while},
-    character::complete::{char, line_ending, space0, space1},
+    character::complete::{char, line_ending, multispace0, space0, space1},
     multi::{many0, separated_list0},
     IResult,
 };
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn parse_nodes_test() {
-        let s = "BU_: DBG DRIVER IO MOTOR SENSOR\n";
+        let s = "BU_: DBG DRIVER IO MOTOR SENSOR \n";
 
         let nodes = vec![
             Node("DBG".to_string()),
@@ -90,6 +90,7 @@ mod tests {
 
         let signal = Signal {
             name: "Voltage_1_2_C".to_string(),
+            multiplexer: Multiplexer::None,
             start_bit: 0,
             bit_size: 8,
             byte_ord: ByteOrder::LittleEddian,
@@ -111,9 +112,10 @@ mod tests {
 
     #[test]
     fn parse_message_with_signal_test() {
-        let s = r#"BO_ 100 DRIVER_HEARTBEAT: 1 DRIVER
- SG_ NEW_SIGNAL_1 : 3|12@0+ (1,-2048) [0|1] "" XXX
- SG_ NEW_SIGNAL_2 : 19|12@0+ (1,-2048) [0|1] "" SENSOR,MOTOR,K16_BECM
+        let s = r#"
+BO_ 100 DRIVER_HEARTBEAT: 1 DRIVER
+ SG_ NEW_SIGNAL_1 m0 : 3|12@0+ (1,-2048) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 M : 19|12@0+ (1,-2048) [0|1] "" SENSOR,MOTOR,K16_BECM
 "#;
 
         let message = Message {
@@ -124,6 +126,7 @@ mod tests {
             signals: Some(vec![
                 Signal {
                     name: "NEW_SIGNAL_1".to_string(),
+                    multiplexer: Multiplexer::Multiplexer(0),
                     start_bit: 3,
                     bit_size: 12,
                     byte_ord: ByteOrder::BigEndian,
@@ -137,6 +140,7 @@ mod tests {
                 },
                 Signal {
                     name: "NEW_SIGNAL_2".to_string(),
+                    multiplexer: Multiplexer::Switch,
                     start_bit: 19,
                     bit_size: 12,
                     byte_ord: ByteOrder::BigEndian,
@@ -201,6 +205,177 @@ mod tests {
         };
         assert_eq!(parse_comment(s).unwrap().1, comment);
     }
+
+    #[test]
+    fn parse_dbc_test() {
+        let s = r#"
+VERSION ""
+
+
+NS_ :
+    CM_
+    BA_
+    VAL_
+    CAT_
+
+BS_: 
+BU_: K16_BECM K114B_HPCM T18_BatteryCharger 
+
+BO_ 1840 WebData_1840: 4 PC
+    SG_ Signal_2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+    SG_ Signal_1 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 512 Battery_Module_1: 8 K16_BECM
+   SG_ Voltage_1_0_A m0 : 4|12@0+ (0.00125,0) [0|0] "V" K16_BECM
+   SG_ Voltage_1_1_A m1 : 4|12@0+ (0.00125,0) [0|0] "V" K16_BECM
+   SG_ Voltage_1_2_A m2 : 4|12@0+ (0.00125,0) [0|0] "V" K16_BECM
+   SG_ Cell_Bank_Number_1 M : 55|3@0+ (1,0) [0|0] "" K16_BECM
+
+CM_ BO_ 1840 "Some Message comment";
+CM_ SG_ 1840 Signal_4 "asaklfjlsdfjlsdfgls
+HH?=(%)/&KKDKFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv";
+CM_ SG_ 5 TestSigLittleUnsigned1 "asaklfjlsdfjlsdfgls
+=0943503450KFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv";
+"#;
+
+        let dbc = DBC {
+            version: Version("".to_string()),
+            new_symbol: vec![
+                Symbol("CM_".to_string()),
+                Symbol("BA_".to_string()),
+                Symbol("VAL_".to_string()),
+                Symbol("CAT_".to_string()),
+            ],
+            bit_timing: Option::None,
+            nodes: vec![
+                Node("K16_BECM".to_string()),
+                Node("K114B_HPCM".to_string()),
+                Node("T18_BatteryCharger".to_string()),
+            ],
+            messages: vec![
+                Message {
+                    id: 1840,
+                    name: "WebData_1840".to_string(),
+                    dlc: 4,
+                    sender: "PC".to_string(),
+                    signals: Some(vec![
+                        Signal {
+                            name: "Signal_2".to_string(),
+                            multiplexer: Multiplexer::None,
+                            start_bit: 8,
+                            bit_size: 8,
+                            byte_ord: ByteOrder::LittleEddian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 1.0,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 255.0,
+                            unit: "".to_string(),
+                            receiver: vec!["Vector__XXX".to_string()],
+                        },
+                        Signal {
+                            name: "Signal_1".to_string(),
+                            multiplexer: Multiplexer::None,
+                            start_bit: 0,
+                            bit_size: 8,
+                            byte_ord: ByteOrder::LittleEddian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 1.0,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 0.0,
+                            unit: "".to_string(),
+                            receiver: vec!["Vector__XXX".to_string()],
+                        },
+                    ]),
+                },
+                Message {
+                    id: 512,
+                    name: "Battery_Module_1".to_string(),
+                    dlc: 8,
+                    sender: "K16_BECM".to_string(),
+                    signals: Some(vec![
+                        Signal {
+                            name: "Voltage_1_0_A".to_string(),
+                            multiplexer: Multiplexer::Multiplexer(0),
+                            start_bit: 4,
+                            bit_size: 12,
+                            byte_ord: ByteOrder::BigEndian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 0.00125,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 0.0,
+                            unit: "V".to_string(),
+                            receiver: vec!["K16_BECM".to_string()],
+                        },
+                        Signal {
+                            name: "Voltage_1_1_A".to_string(),
+                            multiplexer: Multiplexer::Multiplexer(1),
+                            start_bit: 4,
+                            bit_size: 12,
+                            byte_ord: ByteOrder::BigEndian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 0.00125,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 0.0,
+                            unit: "V".to_string(),
+                            receiver: vec!["K16_BECM".to_string()],
+                        },
+                        Signal {
+                            name: "Voltage_1_2_A".to_string(),
+                            multiplexer: Multiplexer::Multiplexer(2),
+                            start_bit: 4,
+                            bit_size: 12,
+                            byte_ord: ByteOrder::BigEndian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 0.00125,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 0.0,
+                            unit: "V".to_string(),
+                            receiver: vec!["K16_BECM".to_string()],
+                        },
+                        Signal {
+                            name: "Cell_Bank_Number_1".to_string(),
+                            multiplexer: Multiplexer::Switch,
+                            start_bit: 55,
+                            bit_size: 3,
+                            byte_ord: ByteOrder::BigEndian,
+                            value_type: ValueType::UnsignedValue,
+                            scale: 1.0,
+                            offset: 0.0,
+                            min: 0.0,
+                            max: 0.0,
+                            unit: "".to_string(),
+                            receiver: vec!["K16_BECM".to_string()],
+                        },
+                    ]),
+                },
+            ],
+            comments: vec![
+                Comment::Message {
+                    id: 1840,
+                    comment: "Some Message comment".to_string(),
+                },
+                Comment::Signal {
+                    id: 1840,
+                    name: "Signal_4".to_string(),
+                    comment: "asaklfjlsdfjlsdfgls\nHH?=(%)/&KKDKFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"
+                        .to_string(),
+                },
+                Comment::Signal {
+                    id: 5,
+                    name: "TestSigLittleUnsigned1".to_string(),
+                    comment: "asaklfjlsdfjlsdfgls\n=0943503450KFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"
+                        .to_string(),
+                },
+            ],
+        };
+
+        assert_eq!(parse_dbc(s).unwrap().1, dbc);
+    }
 }
 
 fn parse_string(input: &str) -> IResult<&str, &str> {
@@ -218,7 +393,16 @@ fn parse_double_quote_string(input: &str) -> IResult<&str, &str> {
     Ok((input, word))
 }
 
+fn parse_indent_word(input: &str) -> IResult<&str, &str> {
+    let (input, _) = multispace0(input)?;
+    let (input, symbol) = parse_string(input)?;
+    let (input, _) = line_ending(input)?;
+
+    Ok((input, symbol))
+}
+
 fn parse_version(input: &str) -> IResult<&str, Version> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("VERSION")(input)?;
     let (input, _) = space0(input)?;
     let (input, version) = parse_double_quote_string(input)?;
@@ -227,15 +411,8 @@ fn parse_version(input: &str) -> IResult<&str, Version> {
     Ok((input, Version(version.to_string())))
 }
 
-fn parse_indent_word(input: &str) -> IResult<&str, &str> {
-    let (input, _) = space0(input)?;
-    let (input, symbol) = parse_string(input)?;
-    let (input, _) = line_ending(input)?;
-
-    Ok((input, symbol))
-}
-
 fn parse_new_symbol(input: &str) -> IResult<&str, Vec<Symbol>> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("NS_ :")(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = line_ending(input)?;
@@ -248,17 +425,22 @@ fn parse_new_symbol(input: &str) -> IResult<&str, Vec<Symbol>> {
 }
 
 fn parse_bit_timing(input: &str) -> IResult<&str, Option<Vec<BitTiming>>> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("BS_:")(input)?;
+    let (input, _) = space0(input)?;
     let (input, _) = line_ending(input)?;
 
     Ok((input, Option::None))
 }
 
 fn parse_nodes(input: &str) -> IResult<&str, Vec<Node>> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("BU_:")(input)?;
     let (input, _) = space0(input)?;
 
     let (input, nodes) = separated_list0(char(' '), is_not(" \n"))(input)?;
+
+    let (input, _) = space0(input)?;
     let (input, _) = line_ending(input)?;
 
     Ok((
@@ -268,6 +450,7 @@ fn parse_nodes(input: &str) -> IResult<&str, Vec<Node>> {
 }
 
 fn parse_message(input: &str) -> IResult<&str, Message> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("BO_ ")(input)?;
     let (input, id) = nom::character::complete::u32(input)?;
     let (input, _) = space1(input)?;
@@ -295,10 +478,41 @@ fn parse_message(input: &str) -> IResult<&str, Message> {
     ))
 }
 
+fn parse_multiplexer_none(input: &str) -> IResult<&str, Multiplexer> {
+    let (input, _) = char('m')(input)?;
+    let (input, v) = nom::character::complete::u32(input)?;
+
+    Ok((input, Multiplexer::Multiplexer(v)))
+}
+
+fn parse_multiplexer_multiplexer(input: &str) -> IResult<&str, Multiplexer> {
+    let (input, _) = char('M')(input)?;
+
+    Ok((input, Multiplexer::Switch))
+}
+
+fn parse_multiplexer_switch(input: &str) -> IResult<&str, Multiplexer> {
+    Ok((input, Multiplexer::None))
+}
+
+fn parse_multiplexer(input: &str) -> IResult<&str, Multiplexer> {
+    let (input, output) = alt((
+        parse_multiplexer_none,
+        parse_multiplexer_multiplexer,
+        parse_multiplexer_switch,
+    ))(input)?;
+
+    Ok((input, output))
+}
+
 fn parse_signal(input: &str) -> IResult<&str, Signal> {
-    let (input, _) = tag(" SG_ ")(input)?;
+    let (input, _) = multispace0(input)?;
+    let (input, _) = tag("SG_ ")(input)?;
     let (input, name) = parse_string(input)?;
-    let (input, _) = tag(" : ")(input)?;
+    let (input, _) = space1(input)?;
+    let (input, multiplexer) = parse_multiplexer(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = tag(": ")(input)?;
     let (input, start_bit) = nom::character::complete::u32(input)?;
     let (input, _) = char('|')(input)?;
     let (input, bit_size) = nom::character::complete::u32(input)?;
@@ -327,6 +541,7 @@ fn parse_signal(input: &str) -> IResult<&str, Signal> {
         input,
         Signal {
             name: name.to_string(),
+            multiplexer: multiplexer,
             start_bit: start_bit,
             bit_size: bit_size,
             byte_ord: if byte_ord == 1 {
@@ -403,6 +618,7 @@ fn parse_comment_signal(input: &str) -> IResult<&str, Comment> {
 }
 
 fn parse_comment(input: &str) -> IResult<&str, Comment> {
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("CM_ ")(input)?;
     let (input, comment) = alt((
         parse_comment_normal,
@@ -414,4 +630,27 @@ fn parse_comment(input: &str) -> IResult<&str, Comment> {
     let (input, _) = line_ending(input)?;
 
     Ok((input, comment))
+}
+
+fn parse_dbc(input: &str) -> IResult<&str, DBC> {
+    let (input, (version, new_symbol, bit_timing, nodes, messages, comments)) = permutation((
+        parse_version,
+        parse_new_symbol,
+        parse_bit_timing,
+        parse_nodes,
+        many0(parse_message),
+        many0(parse_comment),
+    ))(input)?;
+
+    Ok((
+        input,
+        DBC {
+            version,
+            new_symbol,
+            bit_timing,
+            nodes,
+            messages,
+            comments,
+        },
+    ))
 }

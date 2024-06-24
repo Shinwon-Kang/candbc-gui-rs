@@ -32,8 +32,16 @@ pub struct Message {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum Multiplexer {
+    None,
+    Multiplexer(u32),
+    Switch,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Signal {
     pub name: String,
+    pub multiplexer: Multiplexer,
     pub start_bit: u32,
     pub bit_size: u32,
     pub byte_ord: ByteOrder,
@@ -64,12 +72,12 @@ pub enum Comment {
     },
 }
 
+#[derive(Debug, PartialEq)]
 pub struct DBC {
-    version: Version,                   // VERSION      : DBC 파일 버전
-    new_symbol: Vec<Symbol>,            // NS_          : DBC에서 사용하는 새로운 심볼 정의
-    bit_timing: Option<Vec<BitTiming>>, // BS_          : CAN 네트워크의 비트 타이밍
-    nodes: Vec<Node>,                   // BU_          : 네트워크에 연결된 모든 노드
-    messages: Vec<Message>,             // BO_          : CAN 메시지에 대한 정보 정의
+    pub version: Version,                   // VERSION      : DBC 파일 버전
+    pub new_symbol: Vec<Symbol>,            // NS_          : DBC에서 사용하는 새로운 심볼 정의
+    pub bit_timing: Option<Vec<BitTiming>>, // BS_          : CAN 네트워크의 비트 타이밍
+    pub nodes: Vec<Node>,                   // BU_          : 네트워크에 연결된 모든 노드
+    pub messages: Vec<Message>,             // BO_          : CAN 메시지에 대한 정보 정의
+    pub comments: Vec<Comment>,
 }
-
-impl DBC {}
