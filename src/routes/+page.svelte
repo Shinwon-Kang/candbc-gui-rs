@@ -1,7 +1,1 @@
-<script>
-	import Greet from '../lib/Greet.svelte';
-</script>
-
-<h1>Welcome to SvelteKit</h1>
-
-<Greet />
+<h1>CANBUS Messages</h1>

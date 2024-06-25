@@ -1,7 +1,9 @@
 ## CANDBC Viewer
 
 ### TODO List
-- [ ] parser (nom)  
+
+- [ ] parser (nom)
+
   - version
   - new symbol
   - bit timing
