@@ -16,7 +16,7 @@
 		ChevronLeftOutline,
 		ChevronRightOutline,
 		SearchOutline,
-		QuestionCircleOutline,
+		QuestionCircleOutline
 	} from 'flowbite-svelte-icons';
 
 	$: activeUrl = $page.url.searchParams.get('page');
@@ -62,9 +62,7 @@
 		<div class="m-2 border-solid">
 			<Carousel particlesToShow={4} particlesToScroll={1}>
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						DRIVER_HEARTBEAT
 					</h5>
 					<div class="space-y-1">
@@ -78,15 +76,16 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
 
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						WebData_1840
 					</h5>
 					<div class="space-y-1">
@@ -100,15 +99,16 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
 
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						Battery_Module_1
 					</h5>
 					<div class="space-y-1">
@@ -122,15 +122,16 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
 
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						Battery_Module_2
 					</h5>
 					<div class="space-y-1">
@@ -144,15 +145,16 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
 
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						Motor_Module_1
 					</h5>
 					<div class="space-y-1">
@@ -166,15 +168,16 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
 
 				<Card class="h-56 m-5 bg-gray-200 grid justify-items-stretch">
-					<h5
-						class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif"
-					>
+					<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white font-serif">
 						Motor_Module_2 | 60
 					</h5>
 					<div class="space-y-1">
@@ -188,7 +191,10 @@
 							Sender: K16_BECM | K16_BECM
 						</p>
 					</div>
-					<Button color="dark" class="w-64 font-serif text-white place-self-center self-end text-base">
+					<Button
+						color="dark"
+						class="w-64 font-serif text-white place-self-center self-end text-base"
+					>
 						View Signals <QuestionCircleOutline class="w-6 h-6 ms-2 text-white" />
 					</Button>
 				</Card>
