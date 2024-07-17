@@ -1,25 +1,28 @@
-<script>
+<script lang="ts">
 	import { Indicator } from 'flowbite-svelte';
 	import Dropzone from 'svelte-file-dropzone';
 	import { UploadOutline, FileOutline, AngleRightOutline } from 'flowbite-svelte-icons';
 
-	let files = {
-		accepted: [],
-		rejected: []
-	};
+	import FileDrop from 'svelte-tauri-filedrop';
 
-	function handleFilesSelect(e) {
-		const { acceptedFiles, fileRejections } = e.detail;
-		files.accepted = [...files.accepted, ...acceptedFiles];
-		files.rejected = [...files.rejected, ...fileRejections];
+	import { invoke } from '@tauri-apps/api/tauri';
+	import { trace, info, error, attachConsole } from 'tauri-plugin-log-api';
+
+	// TODO: change Dropzone
+	async function loadFile(event) {
+		const { acceptedFiles, fileRejections } = event.detail;
+
+		for (const file of acceptedFiles) {
+			info(file.path);
+			var path = file.path;
+			await invoke('file_load', { path });
+		}
 	}
 </script>
 
-<!-- containerClasses="h-3/4 w-2/3 place-self-center place-content-center" -->
-
 <div class="mx-48 flex flex-1">
 	<Dropzone
-		on:drop={handleFilesSelect}
+		on:drop={loadFile}
 		containerClasses="text-gray-400 bg-gray-100 h-3/4 w-2/3 border-dashed border-indigo-50 border-2 rounded-2xl place-self-center place-content-center place-items-center dark:bg-gray-800 grid"
 		disableDefaultStyles
 		accept=".dbc"

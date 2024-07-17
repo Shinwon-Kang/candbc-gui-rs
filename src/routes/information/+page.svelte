@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { Pagination, PaginationItem } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';

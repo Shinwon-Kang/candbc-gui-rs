@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import '../app.css';
 	import { Navbar, NavBrand, NavLi, NavUl } from 'flowbite-svelte';
 	import { FloppyDiskOutline } from 'flowbite-svelte-icons';
