@@ -10,14 +10,33 @@
 	} from 'flowbite-svelte';
 	import { FileOutline, UploadOutline } from 'flowbite-svelte-icons';
 
+	import * as Resizable from "$lib/components/ui/resizable";
+
 	let loaded_paths;
 	const sub_paths = g_paths.subscribe((paths) => {
 		loaded_paths = paths;
 	});
 </script>
 
-<div class="mt-5 flex-1 flex">
-	<div class="m-5 border-r-2 border-gray-200 dark:border-gray-600">
+<Resizable.PaneGroup
+  direction="horizontal"
+  class="min-h-[200px] max-w-md rounded-lg border"
+>
+  <Resizable.Pane defaultSize={25}>
+    <div class="flex h-full items-center justify-center p-6">
+      <span class="font-semibold">Sidebar</span>
+    </div>
+  </Resizable.Pane>
+  <Resizable.Handle withHandle />
+  <Resizable.Pane defaultSize={75}>
+    <div class="flex h-full items-center justify-center p-6">
+      <span class="font-semibold">Content</span>
+    </div>
+  </Resizable.Pane>
+</Resizable.PaneGroup>
+
+<!-- <div class="mt-5 flex-1 flex">
+	<div class="m-5 border-r-2 border-gray-200 dark:border-gray-600 resize-x">
 		<Sidebar asideClass="h-full w-64 flex flex-col items-center dark:text-white">
 			<p class="w-full mt-3 text-2xl font-semibold">Uploaded DBC</p>
 			<SidebarWrapper divClass="w-full flex-1 grid content-between">
@@ -51,4 +70,4 @@
 	<div class="grow w-0 flex-1 flex flex-col">
 		<slot />
 	</div>
-</div>
+</div> -->

@@ -2,9 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::collections::HashMap;
+use std::fs;
 use std::sync::Mutex;
 
-use log::{debug, info, trace, warn};
+use log::{debug, info, error, trace, warn};
+use serde_json::error;
 use tauri::State;
 use tauri_plugin_log::LogTarget;
 
@@ -20,6 +22,29 @@ struct DbcState {
     dbc: Option<dbc::dbc::DBC>,
 }
 
+impl DbcState {
+    fn new(name: String, path: String) -> Result<Self, String> {
+        let raw_dbc =
+            fs::read_to_string(path.clone()).expect("Should have been able to read the file");
+        info!("raw dbc: {}", raw_dbc);
+
+        let dbc = dbc::parser::parse_dbc(&raw_dbc);
+
+        match dbc {
+            Ok(dbc) => {
+                Ok(Self {
+                    name,
+                    path,
+                    dbc: Some(dbc.1),
+                })
+            }
+            Err(e) => {
+                return Err(e.to_string());
+            }
+        }
+    }
+}
+
 #[tauri::command]
 fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String> {
     let name = path.split("/").last().unwrap().to_string();
@@ -33,16 +58,18 @@ fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String>
         return Err(name);
     } else {
         info!("inserting new data");
-        stat.insert(
-            name.clone(),
-            DbcState {
-                name: name.clone(),
-                path: path.clone(),
-                dbc: Option::None, // todo: parse file
-            },
-        );
-    }
 
+        let dbc_state = DbcState::new(name.clone(), path.clone());
+        match dbc_state {
+            Ok(dbc_state) => {
+                stat.insert(name.clone(), dbc_state);
+            }
+            Err(e) => {
+                error!("{}", e);
+                return Err(name);
+            }
+        }
+    }
     debug!("DBC state: {:?}", stat);
 
     Ok(name)

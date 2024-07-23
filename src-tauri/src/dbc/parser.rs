@@ -632,7 +632,7 @@ fn parse_comment(input: &str) -> IResult<&str, Comment> {
     Ok((input, comment))
 }
 
-fn parse_dbc(input: &str) -> IResult<&str, DBC> {
+pub fn parse_dbc(input: &str) -> IResult<&str, DBC> {
     let (input, (version, new_symbol, bit_timing, nodes, messages, comments)) = permutation((
         parse_version,
         parse_new_symbol,
