@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use log::{info, trace, warn};
+use log::{debug, info, trace, warn};
 use tauri::State;
 use tauri_plugin_log::LogTarget;
 
@@ -21,27 +21,31 @@ struct DbcState {
 }
 
 #[tauri::command]
-fn file_load(path: String, state: State<'_, AppState>) {
-    info!("file_load func called: {}", path);
+fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String> {
+    let name = path.split("/").last().unwrap().to_string();
+    info!("file name: {}", name);
 
     let mut stat = state.0.lock().unwrap();
+    let has_key = stat.contains_key(&name);
 
-    // todo: parse file name
-    let has_key = stat.contains_key(&path);
     if has_key {
         info!("cannot insert data, beacuse key is already existed.");
+        return Err(name);
     } else {
+        info!("inserting new data");
         stat.insert(
-            path,
+            name.clone(),
             DbcState {
-                name: "name".to_string(),
-                path: "path".to_string(),
-                dbc: Option::None,
+                name: name.clone(),
+                path: path.clone(),
+                dbc: Option::None, // todo: parse file
             },
         );
     }
 
-    info!("{:?}", stat);
+    debug!("DBC state: {:?}", stat);
+
+    Ok(name)
 }
 
 fn main() {

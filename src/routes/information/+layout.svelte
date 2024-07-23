@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { g_paths } from '$lib/stores.js';
+
 	import {
 		Sidebar,
 		SidebarGroup,
@@ -6,22 +8,12 @@
 		SidebarWrapper,
 		SidebarBrand
 	} from 'flowbite-svelte';
-	import {
-		ChartPieSolid,
-		GridSolid,
-		MailBoxSolid,
-		UserSolid,
-		ShoppingBagSolid,
-		ArrowRightToBracketOutline,
-		EditOutline,
-		FireSolid,
-		BookSolid,
-		RestoreWindowOutline,
-		LifeSaverSolid,
-		FileOutline,
-		UploadOutline
-	} from 'flowbite-svelte-icons';
-	let spanClass = 'flex-1 ms-3 whitespace-nowrap';
+	import { FileOutline, UploadOutline } from 'flowbite-svelte-icons';
+
+	let loaded_paths;
+	const sub_paths = g_paths.subscribe((paths) => {
+		loaded_paths = paths;
+	});
 </script>
 
 <div class="mt-5 flex-1 flex">
@@ -30,55 +22,18 @@
 			<p class="w-full mt-3 text-2xl font-semibold">Uploaded DBC</p>
 			<SidebarWrapper divClass="w-full flex-1 grid content-between">
 				<SidebarGroup ulClass="mt-5 mr-7 space-y-4 self-start">
-					<SidebarItem label="CANDBC_FILE.dbc" href="/">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
-					<SidebarItem label="CANDBC_FILE.dbc">
-						<svelte:fragment slot="icon">
-							<FileOutline
-								class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-					</SidebarItem>
+					{#each loaded_paths as path}
+						<SidebarItem href="/">
+							<svelte:fragment slot="subtext">
+								<p class="break-all">{path}</p>
+							</svelte:fragment>
+							<svelte:fragment slot="icon">
+								<FileOutline
+									class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+								/>
+							</svelte:fragment>
+						</SidebarItem>
+					{/each}
 				</SidebarGroup>
 				<SidebarGroup border ulClass="mr-7">
 					<SidebarItem label="ADD DBC">
