@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::Mutex;
 
-use log::{debug, info, error, trace, warn};
+use log::{debug, error, info, trace, warn};
 use serde_json::error;
 use tauri::State;
 use tauri_plugin_log::LogTarget;
@@ -31,13 +31,11 @@ impl DbcState {
         let dbc = dbc::parser::parse_dbc(&raw_dbc);
 
         match dbc {
-            Ok(dbc) => {
-                Ok(Self {
-                    name,
-                    path,
-                    dbc: Some(dbc.1),
-                })
-            }
+            Ok(dbc) => Ok(Self {
+                name,
+                path,
+                dbc: Some(dbc.1),
+            }),
             Err(e) => {
                 return Err(e.to_string());
             }

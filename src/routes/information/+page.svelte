@@ -57,8 +57,8 @@
 	$: activeUrl = $page.url.pathname;
 </script>
 
-<div class="m-5 flex-1 flex flex-col">
-	<Tabs contentClass="flex-1 m-10">
+<div class="m-5">
+	<Tabs contentClass="m-10">
 		<TabItem open title="Information">
 			<div class="space-y-5 text-xl font-semibold text-gray-500 dark:text-white">
 				<div>
