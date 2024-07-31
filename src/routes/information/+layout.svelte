@@ -13,7 +13,7 @@
 
 <Resizable.PaneGroup direction="horizontal" class="flex-1 flex">
 	<Resizable.Pane defaultSize={15} class="flex flex-col">
-		<div class="h-full m-3 grid grid-rows-1 grid-cols-1 place-content-between">
+		<div class="h-full mt-7 m-3 grid grid-rows-1 grid-cols-1 place-content-between">
 			<div class="space-y-5 w-full">
 				<p class="text-xl font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
 					Uploaded DBC
@@ -43,7 +43,7 @@
 	</Resizable.Pane>
 	<Resizable.Handle withHandle />
 	<Resizable.Pane defaultSize={85}>
-		<div class="">
+		<div class="h-full">
 			<slot />
 		</div>
 	</Resizable.Pane>

@@ -46,6 +46,7 @@
 		"@tauri-apps/plugin-log": "2.0.0-beta.7",
 		"bits-ui": "^0.21.12",
 		"clsx": "^2.1.1",
+		"embla-carousel-svelte": "^8.1.7",
 		"lucide-svelte": "^0.414.0",
 		"mode-watcher": "^0.4.0",
 		"paneforge": "^0.0.5",
