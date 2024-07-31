@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
 
 	import { CircleHelp } from 'lucide-svelte';
 </script>
 
-<Card.Root class="w-[350px]">
+<Card.Root>
 	<Card.Header>
 		<Card.Title>DRIVER_HEARTBEAT</Card.Title>
 		<!-- <Card.Description>Deploy your new project in one-click.</Card.Description> -->

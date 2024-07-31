@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { g_paths } from '../lib/stores.js';
-
-	import { Button } from 'flowbite-svelte';
-
-	import { Upload, File, ChevronRight } from 'lucide-svelte';
-
-	import FileDrop from 'svelte-tauri-filedrop';
-
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { trace, info, error, attachConsole } from 'tauri-plugin-log-api';
+
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Upload, File, ChevronRight } from 'lucide-svelte';
+	import FileDrop from 'svelte-tauri-filedrop';
 
 	let loaded_paths;
 
