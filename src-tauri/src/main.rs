@@ -6,7 +6,10 @@ use std::fs;
 use std::sync::Mutex;
 
 use log::{debug, error, info, trace, warn};
-use serde_json::error;
+
+use serde::{Deserialize, Serialize};
+use serde_json::{self, json};
+
 use tauri::State;
 use tauri_plugin_log::LogTarget;
 
@@ -73,6 +76,44 @@ fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String>
     Ok(name)
 }
 
+#[tauri::command]
+fn return_json() -> Result<String, String> {
+    let john = json!({
+        "file_name": "CANDBC_FILE_.dbc",
+        "version": "0.1.0",
+        "symbols": ["CM_", "BA_", "VAL_", "CAT_"],
+        "nodes": ["K16_BECM", "K114B_HPCM", "T18_BatteryCharger"],
+        "messages_info": [
+            {
+                "message_name": "WebData_1840",
+                "message_cnt": 3
+            },
+            {
+                "message_name": "Battery_Module_1",
+                "message_cnt": 10
+            },
+            {
+                "message_name": "Battery_Module_2",
+                "message_cnt": 15
+            }
+        ],
+        "comments": [
+            ["Imported file _honda_common.dbc starts here"],
+            ["BO_", "1840", "Some Message comment"],
+            [
+                "SG_",
+                "1840",
+                "Signal_4",
+                "asaklfjlsdfjlsdfglsHH?=(%)/&KKDKFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"
+            ],
+            ["SG_", "5", "TestSigLittleUnsigned1", "0943503450KFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"],
+            ["BU_", "K17_EBCM", "Electronic Brake Control Module"]
+        ]
+    });
+
+    Ok(john.to_string())
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(AppState(Mutex::new(HashMap::new())))
@@ -81,7 +122,7 @@ fn main() {
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![file_load])
+        .invoke_handler(tauri::generate_handler![file_load, return_json])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
