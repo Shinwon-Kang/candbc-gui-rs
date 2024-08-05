@@ -20,7 +20,7 @@ struct AppState(Mutex<HashMap<String, DbcState>>);
 
 #[derive(Debug)]
 struct DbcState {
-    name: String,
+    name: String,           
     path: String,
     dbc: Option<dbc::dbc::DBC>,
 }
@@ -37,7 +37,7 @@ impl DbcState {
             Ok(dbc) => Ok(Self {
                 name,
                 path,
-                dbc: Some(dbc.1),
+                dbc: Some(dbc.1), 
             }),
             Err(e) => {
                 return Err(e.to_string());
@@ -77,7 +77,8 @@ fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String>
 }
 
 #[tauri::command]
-fn return_json() -> Result<String, String> {
+fn get_summary_info(path: String, state: State<'_, AppState>) -> Result<String, String> {
+    info!("get summary info: {}", path);
     let john = json!({
         "file_name": "CANDBC_FILE_.dbc",
         "version": "0.1.0",
@@ -114,6 +115,11 @@ fn return_json() -> Result<String, String> {
     Ok(john.to_string())
 }
 
+#[tauri::command]
+fn get_message_info(state: State<'_, AppState>) -> Result<String, String> {
+    Ok(String::from("x"))
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(AppState(Mutex::new(HashMap::new())))
@@ -122,7 +128,7 @@ fn main() {
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![file_load, return_json])
+        .invoke_handler(tauri::generate_handler![file_load, get_summary_info, get_message_info])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
