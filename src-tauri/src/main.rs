@@ -18,11 +18,27 @@ pub mod dbc;
 #[derive(Debug)]
 struct AppState(Mutex<HashMap<String, DbcState>>);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct DbcState {
-    name: String,           
+    name: String,
     path: String,
-    dbc: Option<dbc::dbc::DBC>,
+    dbc: dbc::dbc::DBC,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct MessagesInfo {
+    name: String,
+    cnt: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DbcInfo {
+    file_name: String,
+    version: String,
+    symbols: Vec<String>,
+    nodes: Vec<String>,
+    messages: Vec<MessagesInfo>,
+    comments: Vec<Vec<String>>,
 }
 
 impl DbcState {
@@ -37,7 +53,7 @@ impl DbcState {
             Ok(dbc) => Ok(Self {
                 name,
                 path,
-                dbc: Some(dbc.1), 
+                dbc: dbc.1,
             }),
             Err(e) => {
                 return Err(e.to_string());
@@ -77,42 +93,67 @@ fn file_load(path: String, state: State<'_, AppState>) -> Result<String, String>
 }
 
 #[tauri::command]
-fn get_summary_info(path: String, state: State<'_, AppState>) -> Result<String, String> {
-    info!("get summary info: {}", path);
-    let john = json!({
-        "file_name": "CANDBC_FILE_.dbc",
-        "version": "0.1.0",
-        "symbols": ["CM_", "BA_", "VAL_", "CAT_"],
-        "nodes": ["K16_BECM", "K114B_HPCM", "T18_BatteryCharger"],
-        "messages_info": [
-            {
-                "message_name": "WebData_1840",
-                "message_cnt": 3
-            },
-            {
-                "message_name": "Battery_Module_1",
-                "message_cnt": 10
-            },
-            {
-                "message_name": "Battery_Module_2",
-                "message_cnt": 15
-            }
-        ],
-        "comments": [
-            ["Imported file _honda_common.dbc starts here"],
-            ["BO_", "1840", "Some Message comment"],
-            [
-                "SG_",
-                "1840",
-                "Signal_4",
-                "asaklfjlsdfjlsdfglsHH?=(%)/&KKDKFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"
-            ],
-            ["SG_", "5", "TestSigLittleUnsigned1", "0943503450KFSDKFKDFKSDFKSDFNKCnvsdcvsvxkcv"],
-            ["BU_", "K17_EBCM", "Electronic Brake Control Module"]
-        ]
-    });
+fn get_dbc_info(dbc: String, state: State<'_, AppState>) -> Result<String, String> {
+    info!("get_dbc_info(): {}", dbc);
 
-    Ok(john.to_string())
+    let stat = state.0.lock().unwrap();
+    let has_key = stat.contains_key(&dbc);
+
+    match has_key {
+        true => {
+            let d = stat[&dbc].clone();
+
+            let dbc_info = DbcInfo {
+                file_name: d.name,
+                version: d.dbc.version.0,
+                symbols: d
+                    .dbc
+                    .new_symbol
+                    .into_iter()
+                    .map(|symbol| symbol.0)
+                    .collect(),
+                nodes: d.dbc.nodes.into_iter().map(|node| node.0).collect(),
+                messages: d
+                    .dbc
+                    .messages
+                    .into_iter()
+                    .map(|message| MessagesInfo {
+                        name: message.name,
+                        cnt: message
+                            .signals
+                            .map(|signal| signal.len())
+                            .unwrap_or_default(),
+                    })
+                    .collect(),
+                comments: d
+                    .dbc
+                    .comments
+                    .into_iter()
+                    .map(|comment| match comment {
+                        dbc::dbc::Comment::Normal(cmt) => vec![cmt],
+                        dbc::dbc::Comment::Node { name, comment } => vec![name, comment],
+                        dbc::dbc::Comment::Message { id, comment } => vec![id.to_string(), comment],
+                        dbc::dbc::Comment::Signal { id, name, comment } => {
+                            vec![id.to_string(), name, comment]
+                        }
+                    })
+                    .collect(),
+            };
+
+            match serde_json::to_string(&dbc_info) {
+                Ok(val) => {
+                    println!("{}", val);
+                    return Ok(val);
+                }
+                Err(err) => {
+                    error!("{}", err);
+                }
+            }
+        }
+        _ => (),
+    }
+
+    Err(dbc)
 }
 
 #[tauri::command]
@@ -128,7 +169,11 @@ fn main() {
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![file_load, get_summary_info, get_message_info])
+        .invoke_handler(tauri::generate_handler![
+            file_load,
+            get_dbc_info,
+            get_message_info
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

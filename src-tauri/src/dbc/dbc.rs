@@ -1,28 +1,28 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ByteOrder {
     LittleEddian,
     BigEndian,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ValueType {
     UnsignedValue,
     SignedValue,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Version(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Symbol(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct BitTiming(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Node(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Message {
     pub id: u32,
     pub name: String,
@@ -31,14 +31,14 @@ pub struct Message {
     pub signals: Option<Vec<Signal>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Multiplexer {
     None,
     Multiplexer(u32),
     Switch,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Signal {
     pub name: String,
     pub multiplexer: Multiplexer,
@@ -54,7 +54,7 @@ pub struct Signal {
     pub receiver: Vec<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Comment {
     Normal(String),
     Node {
@@ -72,7 +72,7 @@ pub enum Comment {
     },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DBC {
     pub version: Version,                   // VERSION      : DBC 파일 버전
     pub new_symbol: Vec<Symbol>,            // NS_          : DBC에서 사용하는 새로운 심볼 정의

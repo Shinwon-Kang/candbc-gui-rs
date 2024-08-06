@@ -1,20 +1,20 @@
 <script lang="ts">
-	import SummaryView from '$lib/SummaryView.svelte';
+	import InfoView from '$lib/InfoView.svelte';
 	import MessageView from '$lib/MessageView.svelte';
 
 	import * as Tabs from '$lib/components/ui/tabs';
+
+	import { Badge } from '$lib/components/ui/badge';
 </script>
 
-<div class="h-full m-5">
-	<Tabs.Root value="summary" class="mt-5 mx-5">
-		<Tabs.List class="grid w-full grid-cols-2">
-			<Tabs.Trigger value="summary">Summary</Tabs.Trigger>
+<!-- <div class="bg-green-300">
+	<Tabs.Root value="info" class="">
+		<Tabs.List class="w-full grid grid-cols-2">
+			<Tabs.Trigger value="info">Info</Tabs.Trigger>
 			<Tabs.Trigger value="message">Message</Tabs.Trigger>
 		</Tabs.List>
-		<Tabs.Content value="summary">
-			<div class="mt-10">
-				<SummaryView />
-			</div>
+		<Tabs.Content value="info">
+			<InfoView />
 		</Tabs.Content>
 		<Tabs.Content value="message">
 			<div class="mt-10">
@@ -22,4 +22,8 @@
 			</div>
 		</Tabs.Content>
 	</Tabs.Root>
+</div> -->
+
+<div class="flex flex-col h-full">
+	<InfoView />
 </div>

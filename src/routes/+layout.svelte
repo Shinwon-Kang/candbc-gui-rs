@@ -9,7 +9,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 </script>
 
-<div class="h-full flex flex-col font-serif">
+<div class="h-screen flex flex-col font-serif">
 	<ModeWatcher />
 	<div class="flex h-16 place-content-between items-center border-b-2">
 		<div class="ml-7">
@@ -26,7 +26,7 @@
 			</Button>
 		</div>
 	</div>
-	<div class="flex-1 flex-col flex">
+	<div class="h-[calc(100vh-64px)] flex-1 flex-col flex">
 		<slot />
 	</div>
 </div>
