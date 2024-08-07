@@ -26,6 +26,7 @@
 					<Folder
 						class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
 					/>
+
 					<p
 						class="ml-2 w-full overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold"
 					>
@@ -56,21 +57,23 @@
 
 			<Separator />
 			<Button
-				class="mt-3 flex text-left text-black bg-transparent hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+				class="flex justify-start mt-3 text-black bg-transparent hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
 			>
-				<Upload
-					class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-				/>
-				<p
-					class="ml-2 w-full overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold"
-				>
-					ADD DBC
-				</p>
+				<span class="flex">
+					<Upload
+						class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+					/>
+					<p
+						class="ml-2 w-full overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold"
+					>
+						ADD DBC
+					</p>
+				</span>
 			</Button>
 		</div>
 	</Resizable.Pane>
 	<Resizable.Handle withHandle />
-	<Resizable.Pane defaultSize={85} class="flex flex-col m-3">
+	<Resizable.Pane defaultSize={85} class="flex flex-col">
 		<slot />
 	</Resizable.Pane>
 </Resizable.PaneGroup>
